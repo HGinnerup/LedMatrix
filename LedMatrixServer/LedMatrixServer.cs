@@ -124,20 +124,58 @@ namespace LedMatrixServer {
         }
 
 
+        /*
+        
+        private Bitmap FitImage(Bitmap image) {
+            Graphics graphic = Graphics.FromImage(image);
 
-        //https://stackoverflow.com/questions/1922040/how-to-resize-an-image-c-sharp
+            graphic.InterpolationMode  = InterpolationMode.HighQualityBicubic;
+            graphic.SmoothingMode      = SmoothingMode.HighQuality;
+            graphic.PixelOffsetMode    = PixelOffsetMode.HighQuality;
+            graphic.CompositingQuality = CompositingQuality.HighQuality;
+
+            // Figure out the ratio
+            double ratioX = (double)this.Width / (double)image.Width;
+            double ratioY = (double)this.Height / (double)image.Height;
+            // use whichever multiplier is smaller
+            double ratio  = ratioX < ratioY ? ratioX : ratioY;
+
+            // now we can get the new height and width
+            int newWidth  = Convert.ToInt32(image.Width * ratio);
+            int newHeight = Convert.ToInt32(image.Height * ratio);
+
+            // Now calculate the X,Y position of the upper-left corner 
+            // (one of these will always be zero)
+            int posX = Convert.ToInt32((this.Width - (image.Width * ratio)) / 2);
+            int posY = Convert.ToInt32((this.Height - (image.Height * ratio)) / 2);
+
+            graphic.Clear(Color.White); // white padding
+            graphic.DrawImage(image, posX, posY, newWidth, newHeight);
+
+            return image;
+        }
+
+        */
+
         /// <summary>
         /// Resize the image to the specified width and height.
         /// </summary>
         /// <param name="image">The image to resize.</param>
-        /// <param name="width">The width to resize to.</param>
-        /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeImage(Image image, int width, int height) {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
+        private Bitmap FitImage(Image image) {
+            var destImage = new Bitmap(this.Width, this.Height);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            // Figure out the ratio
+            double ratioX = (double)this.Width / (double)image.Width;
+            double ratioY = (double)this.Height / (double)image.Height;
+            // use whichever multiplier is smaller
+            double ratio = ratioX < ratioY ? ratioX : ratioY;
+
+            // now we can get the new height and width
+            int newWidth = Convert.ToInt32(image.Width * ratio);
+            int newHeight = Convert.ToInt32(image.Height * ratio);
 
             using (var graphics = Graphics.FromImage(destImage)) {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
@@ -148,12 +186,13 @@ namespace LedMatrixServer {
 
                 using (var wrapMode = new ImageAttributes()) {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                    graphics.DrawImage(image, new Rectangle(0, 0, newWidth, newHeight), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
 
             return destImage;
         }
+        
 
         public List<Frame> CreateFrames(Image gif) {
             var frames = new List<Frame>();
@@ -165,7 +204,7 @@ namespace LedMatrixServer {
                 Frame frame = new Frame();
 
                 gif.SelectActiveFrame(frameDimension, f);
-                Bitmap bmp = ResizeImage(new Bitmap(gif), Width, Height);
+                Bitmap bmp = FitImage(new Bitmap(gif));
 
 
                 // https://stackoverflow.com/questions/3785031/getting-the-frame-duration-of-an-animated-gif
