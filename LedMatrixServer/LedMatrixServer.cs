@@ -22,13 +22,11 @@ namespace LedMatrixServer {
         public readonly int Width = 15;
         public readonly int Height = 15;
 
-
         private void SendByte(byte b) {
             byte[] buffer = { b };
             while (!Serial.CanWrite) ;
             Serial.Write(buffer, 0, 1);
         }
-
         private DateTime LastDraw = DateTime.Now;
         public void Draw() {
             SendByte((byte)Actions.Render);
@@ -40,7 +38,6 @@ namespace LedMatrixServer {
             for (int i = 0; i < 10; i++)
                 SendByte((byte)Actions.ClearBuffer);
         }
-
         public void SetPixel(Point point, Color color) {
             SetPixel(point.X, point.Y, color.R, color.G, color.B); ;
         }
@@ -57,7 +54,6 @@ namespace LedMatrixServer {
             Serial.Write(buffer, 0, 4);
             Thread.Sleep(1);
         }
-
         public void SetColor(Color color) {
             for (int y = 1; y < 14; y++) {
                 for (int x = 1; x < 14; x++) {
@@ -66,7 +62,6 @@ namespace LedMatrixServer {
             }
             Draw();
         }
-
         public void PrintSerialInput() {
             if (Serial.BytesToRead > 0) {
                 while (Serial.BytesToRead > 0) {
@@ -75,7 +70,6 @@ namespace LedMatrixServer {
                 Console.WriteLine();
             }
         }
-
         public LedMatrixServer() {
             Serial = new SerialPortStream("COM3", 115200);
             Serial.DataBits = 8;
@@ -90,7 +84,6 @@ namespace LedMatrixServer {
             Serial.Open();
             Thread.Sleep(500);
         }
-
         public void RenderBitmap(Bitmap bmp) {
             RenderBitmap(bmp, null);
         }
@@ -104,10 +97,6 @@ namespace LedMatrixServer {
                 }
             }
         }
-
-
-
-
         public class Pixel {
             public Color Color { get; set; }
             public Point Point { get; set; }
@@ -123,39 +112,6 @@ namespace LedMatrixServer {
             }
         }
 
-
-        /*
-        
-        private Bitmap FitImage(Bitmap image) {
-            Graphics graphic = Graphics.FromImage(image);
-
-            graphic.InterpolationMode  = InterpolationMode.HighQualityBicubic;
-            graphic.SmoothingMode      = SmoothingMode.HighQuality;
-            graphic.PixelOffsetMode    = PixelOffsetMode.HighQuality;
-            graphic.CompositingQuality = CompositingQuality.HighQuality;
-
-            // Figure out the ratio
-            double ratioX = (double)this.Width / (double)image.Width;
-            double ratioY = (double)this.Height / (double)image.Height;
-            // use whichever multiplier is smaller
-            double ratio  = ratioX < ratioY ? ratioX : ratioY;
-
-            // now we can get the new height and width
-            int newWidth  = Convert.ToInt32(image.Width * ratio);
-            int newHeight = Convert.ToInt32(image.Height * ratio);
-
-            // Now calculate the X,Y position of the upper-left corner 
-            // (one of these will always be zero)
-            int posX = Convert.ToInt32((this.Width - (image.Width * ratio)) / 2);
-            int posY = Convert.ToInt32((this.Height - (image.Height * ratio)) / 2);
-
-            graphic.Clear(Color.White); // white padding
-            graphic.DrawImage(image, posX, posY, newWidth, newHeight);
-
-            return image;
-        }
-
-        */
 
         /// <summary>
         /// Resize the image to the specified width and height.
@@ -241,10 +197,6 @@ namespace LedMatrixServer {
 
         public void RenderGif(string filename) {
             Image img = Image.FromFile(filename);
-            //Image img = Image.FromFile("flag.gif");
-
-
-
             var frames = CreateFrames(img);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
