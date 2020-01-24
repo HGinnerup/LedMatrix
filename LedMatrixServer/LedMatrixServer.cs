@@ -11,21 +11,22 @@ using RJCP.IO.Ports;
 namespace LedMatrixServer {
     partial class LedMatrixServer : IDisposable {
         enum Actions {
-            Invalid = 0xFF,
-            Render = 0xF0,
-            BitMap = 0xF1,
+            Invalid     = 0xFF,
+            Render      = 0xF0,
+            BitMap      = 0xF1,
             ClearBuffer = 0xF2
         };
 
-        //public SerialPort Serial;
-        public SerialPortStream Serial;
+        public Serial Serial = new Serial();
+        
         public readonly int Width = 15;
         public readonly int Height = 15;
 
         private void SendByte(byte b) {
             byte[] buffer = { b };
-            while (!Serial.CanWrite) ;
-            Serial.Write(buffer, 0, 1);
+            Serial.Queue(b);
+            //while (!Serial.CanWrite) ;
+            //Serial.Write(buffer, 0, 1);
         }
         private DateTime LastDraw = DateTime.Now;
         public void Draw() {
@@ -47,14 +48,19 @@ namespace LedMatrixServer {
         public void SetPixel(int x, int y, int r, int g, int b) {
             SetPixel((byte)(((x & 0xF) << 4) + (((Height-1)-y) & 0xF)), (byte)r, (byte)g, (byte)b);
         }
+
         private void SetPixel(byte position, byte r, byte g, byte b) {
-            byte divisor = 1;
+            byte divisor = 10;
             byte[] buffer = { position, (byte)(r/divisor), (byte)(g/divisor), (byte)(b/divisor) };
 
-            while (!Serial.CanWrite) Thread.Sleep(100);
-            Serial.Write(buffer, 0, 4);
-            Thread.Sleep(1);
+            Serial.Queue(buffer);
+            
+            //while (!Serial.CanWrite) Thread.Sleep(100);
+            //Serial.Write(buffer, 0, 4);
+            //Thread.Sleep(1);
         }
+
+
         public void SetColor(Color color) {
             for (int y = 0; y < Height; y++) {
                 for (int x = 0; x < Width; x++) {
@@ -63,27 +69,9 @@ namespace LedMatrixServer {
             }
             Draw();
         }
-        public void PrintSerialInput() {
-            if (Serial.BytesToRead > 0) {
-                while (Serial.BytesToRead > 0) {
-                    Console.Write($"{Serial.ReadByte().ToString("X2")} ");
-                }
-                Console.WriteLine();
-            }
-        }
+
         public LedMatrixServer() {
-            Serial = new SerialPortStream("COM3", 115200);
-            Serial.DataBits = 8;
 
-            Serial.Parity    = Parity.Even;
-            Serial.StopBits  = StopBits.One;
-            Serial.Handshake = Handshake.DtrRts;
-
-            Serial.DtrEnable = false;
-            Serial.RtsEnable = false;
-
-            Serial.Open();
-            Thread.Sleep(500);
         }
         public void RenderBitmap(Bitmap bmp) {
             RenderBitmap(bmp, null);
@@ -169,7 +157,7 @@ namespace LedMatrixServer {
                 frame.DelayMS = 0;
                 foreach(var item in gif.PropertyItems) {
                     if(item.Id == 0x5100) {
-                        frame.DelayMS = (item.Value[0] + item.Value[1] * 256) * 10;
+                        //frame.DelayMS = (item.Value[0] + item.Value[1] * 256) * 10;
                     }
                 }
 
