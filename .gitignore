@@ -354,3 +354,4 @@ MigrationBackup/
 
 __vm/
 LedMatrix/__vm
+*.xml
