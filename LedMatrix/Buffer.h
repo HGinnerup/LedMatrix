@@ -18,16 +18,18 @@ public:
 	const uint16_t bufferSize = BufferSize;
 	void ReadNBytes(uint8_t* buffer, uint16_t count);
 	uint16_t PopulateBuffer();
+	uint16_t Available();
+	void Flush();
 };
 
 
 template <uint16_t BufferSize>
-void SerialBuffer<BufferSize>::ReadNBytes(uint8_t* buffer, uint16_t count)
-{
+void SerialBuffer<BufferSize>::ReadNBytes(uint8_t* buffer, uint16_t count) {
 	while (count > this->bufferLength) this->PopulateBuffer();
 
 	for (uint16_t i = 0; i < count; i++) {
-		buffer[(this->bufferStart + i) % this->bufferSize];
+		//buffer[(this->bufferStart + i) % this->bufferSize];
+		buffer[i] = this->buffer[(this->bufferStart + i) % this->bufferSize];
 	}
 
 	this->bufferStart = (this->bufferStart + count) % this->bufferSize;
@@ -56,4 +58,15 @@ uint16_t SerialBuffer<BufferSize>::PopulateBuffer()
 	Serial.write(buffer, bytesReadAfterLooparound);
 
 	return bytesReadBeforeLooparound + bytesReadAfterLooparound;
+}
+
+template <uint16_t BufferSize>
+uint16_t SerialBuffer<BufferSize>::Available() {
+	return this->bufferLength + Serial.available();
+}
+
+template <uint16_t BufferSize>
+void SerialBuffer<BufferSize>::Flush() {
+	this->bufferLength = 0;
+	Serial.flush();
 }
