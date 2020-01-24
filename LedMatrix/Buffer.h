@@ -25,10 +25,18 @@ public:
 
 template <uint16_t BufferSize>
 void SerialBuffer<BufferSize>::ReadNBytes(uint8_t* buffer, uint16_t count) {
+
+	while (Serial.available() < count);
+	Serial.readBytes(buffer, count);
+	return;
+
+
+
+
+	// TODO: will block if count is larger than buffersize
 	while (count > this->bufferLength) this->PopulateBuffer();
 
 	for (uint16_t i = 0; i < count; i++) {
-		//buffer[(this->bufferStart + i) % this->bufferSize];
 		buffer[i] = this->buffer[(this->bufferStart + i) % this->bufferSize];
 	}
 
