@@ -151,14 +151,18 @@ void setup() {
 	Serial.begin(115200, SERIAL_8E1);
 }
 
+bool lightOn = false;
+
 void loop() {
+
+	lightOn = !lightOn;
+	digitalWrite(LED_BUILTIN, lightOn);
+
 	uint8_t data;
 	Buffer.ReadNBytes(&data, 1);
 
 	// Positional data beyond the bounds of NUM_LEDS_X and NUM_LEDS_Y can be used for special cases.
 	switch (data) {
-		case 0x00:
-		break;
 		case (uint8_t)Actions::Invalid:
 		break;
 		case (uint8_t)Actions::Render:
