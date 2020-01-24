@@ -48,15 +48,16 @@ namespace LedMatrixServer {
             SetPixel((byte)(((x & 0xF) << 4) + (((Height-1)-y) & 0xF)), (byte)r, (byte)g, (byte)b);
         }
         private void SetPixel(byte position, byte r, byte g, byte b) {
-            byte[] buffer = { position, r, g, b };
+            byte divisor = 1;
+            byte[] buffer = { position, (byte)(r/divisor), (byte)(g/divisor), (byte)(b/divisor) };
 
-            while (!Serial.CanWrite) ;
+            while (!Serial.CanWrite) Thread.Sleep(100);
             Serial.Write(buffer, 0, 4);
             Thread.Sleep(1);
         }
         public void SetColor(Color color) {
-            for (int y = 1; y < 14; y++) {
-                for (int x = 1; x < 14; x++) {
+            for (int y = 0; y < Height; y++) {
+                for (int x = 0; x < Width; x++) {
                     SetPixel(x, y, color);
                 }
             }
@@ -74,8 +75,8 @@ namespace LedMatrixServer {
             Serial = new SerialPortStream("COM3", 115200);
             Serial.DataBits = 8;
 
-            Serial.Parity = Parity.Even;
-            Serial.StopBits = StopBits.One;
+            Serial.Parity    = Parity.Even;
+            Serial.StopBits  = StopBits.One;
             Serial.Handshake = Handshake.DtrRts;
 
             Serial.DtrEnable = false;
@@ -93,7 +94,7 @@ namespace LedMatrixServer {
                     var color = bmp.GetPixel(x, y);
                     if (color == differential?.GetPixel(x, y)) continue;
 
-                    SetPixel(x, y, Color.FromArgb(color.R / 10, color.G / 10, color.B / 10));
+                    SetPixel(x, y, Color.FromArgb(color.R, color.G, color.B));
                 }
             }
         }
@@ -164,8 +165,13 @@ namespace LedMatrixServer {
 
 
                 // https://stackoverflow.com/questions/3785031/getting-the-frame-duration-of-an-animated-gif
-                var gifDelay = gif.GetPropertyItem(0x5100);
-                frame.DelayMS = (gifDelay.Value[0] + gifDelay.Value[1] * 256) * 10;
+                //var gifDelay = gif.GetPropertyItem(0x5100);
+                frame.DelayMS = 0;
+                foreach(var item in gif.PropertyItems) {
+                    if(item.Id == 0x5100) {
+                        frame.DelayMS = (item.Value[0] + item.Value[1] * 256) * 10;
+                    }
+                }
 
                 for (int x = 0; x < bmp.Width; x++) {
                     for (int y = 0; y < bmp.Height; y++) {
@@ -173,7 +179,7 @@ namespace LedMatrixServer {
 
                         frame.AllPixels.Add(new Pixel() {
                             Point = new Point(x, y),
-                            Color = Color.FromArgb(color.R / 10, color.G / 10, color.B / 10)
+                            Color = Color.FromArgb(color.R, color.G, color.B)
                         });
                     }
                 }
@@ -202,18 +208,24 @@ namespace LedMatrixServer {
             Stopwatch stopwatch = Stopwatch.StartNew();
             SetPixels(frames[0].AllPixels);
             Draw();
-            int i=1;
-            while(true) {
+            if(frames.Count > 1)
+            {
+                int i = 1;
+                while (true)
+                {
 
-                while (i<frames.Count) {
-                    stopwatch.Restart();
-                    SetPixels(frames[i].ChangedPixels);
-                    Thread.Sleep(Math.Max(frames[i].DelayMS - (int)stopwatch.ElapsedMilliseconds, 0));
-                    Draw();
-                    i++;
+                    while (i < frames.Count)
+                    {
+                        stopwatch.Restart();
+                        SetPixels(frames[i].ChangedPixels);
+                        Thread.Sleep(Math.Max(frames[i].DelayMS - (int)stopwatch.ElapsedMilliseconds, 0));
+                        Draw();
+                        i++;
+                    }
+                    i = 0;
                 }
-                i = 0;
             }
+
         }
 
 
