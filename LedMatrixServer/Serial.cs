@@ -17,13 +17,8 @@ namespace LedMatrixServer
         private SerialPort PortStream { get; set; }
 
         public void Queue(byte b) {
-            //Buffer.Add(b);
-            //if (Buffer.Count >= MaxPacketSize) Transmit();
-
             var array = new byte[] { b };
             PortStream.Write(array, 0, array.Length);
-            //Thread.Sleep(1);
-            //Thread.Sleep(10);
         }
         public void Queue(IEnumerable<byte> b) {
             Buffer.AddRange(b);
@@ -33,13 +28,10 @@ namespace LedMatrixServer
         public void Transmit() {
             PortStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
-            //Thread.Sleep(1);
-            //Thread.SpinWait(10000);
         }
 
         public Serial() {
-            PortStream = new SerialPort("COM3", 115200);
-            //PortStream = new SerialPortStream("COM3", 115200);
+            PortStream = new SerialPort("COM3", 1000000);
 
             PortStream.DataBits = 8;
 

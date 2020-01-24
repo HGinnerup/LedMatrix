@@ -148,7 +148,8 @@ void renderIncomingBitmap() {
 
 void setup() {
 	FastLED.addLeds<WS2812B, 3, GRB>(leds, NUM_LEDS);
-	Serial.begin(115200, SERIAL_8E1);
+	//Serial.begin(115200, SERIAL_8E1);
+	Serial.begin(1000000, SERIAL_8E1);
 }
 
 bool lightOn = false;
