@@ -19,15 +19,14 @@ namespace LedMatrixServer {
 
         public Serial Serial = new Serial();
         
-        public readonly int Width = 15;
+        public readonly int Width  = 15;
         public readonly int Height = 15;
 
         private void SendByte(byte b) {
             byte[] buffer = { b };
             Serial.Queue(b);
-            //while (!Serial.CanWrite) ;
-            //Serial.Write(buffer, 0, 1);
         }
+
         private DateTime LastDraw = DateTime.Now;
         public void Draw() {
             SendByte((byte)Actions.Render);
@@ -50,14 +49,9 @@ namespace LedMatrixServer {
         }
 
         private void SetPixel(byte position, byte r, byte g, byte b) {
-            byte divisor = 10;
-            byte[] buffer = { position, (byte)(r/divisor), (byte)(g/divisor), (byte)(b/divisor) };
+            byte[] buffer = { position, r, g, b };
 
             Serial.Queue(buffer);
-            
-            //while (!Serial.CanWrite) Thread.Sleep(100);
-            //Serial.Write(buffer, 0, 4);
-            //Thread.Sleep(1);
         }
 
 
@@ -96,8 +90,14 @@ namespace LedMatrixServer {
             public int DelayMS { get; set; } = 0;
         }
         public void SetPixels(IEnumerable<Pixel> pixels) {
-            foreach(var pixel in pixels) {
+            foreach (var pixel in pixels)
+            {
                 SetPixel(pixel.Point, pixel.Color);
+            }
+        }
+        public void SetPixels(IEnumerable<Pixel> pixels, int divisor) {
+            foreach (var pixel in pixels) {
+                SetPixel(pixel.Point, Color.FromArgb(pixel.Color.R / divisor, pixel.Color.G / divisor, pixel.Color.B / divisor));
             }
         }
 
@@ -157,7 +157,7 @@ namespace LedMatrixServer {
                 frame.DelayMS = 0;
                 foreach(var item in gif.PropertyItems) {
                     if(item.Id == 0x5100) {
-                        //frame.DelayMS = (item.Value[0] + item.Value[1] * 256) * 10;
+                        frame.DelayMS = (item.Value[0] + item.Value[1] * 256) * 10;
                     }
                 }
 
@@ -189,31 +189,29 @@ namespace LedMatrixServer {
         }
 
 
-        public void RenderGif(string filename) {
+        public void RenderGif(string filename, int iterations = 0, int colorDivisor = 1, bool keepDelay = true) {
             Image img = Image.FromFile(filename);
             var frames = CreateFrames(img);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            SetPixels(frames[0].AllPixels);
+            SetPixels(frames[0].AllPixels, colorDivisor);
             Draw();
-            if(frames.Count > 1)
-            {
+            if(frames.Count > 1) {
                 int i = 1;
-                while (true)
-                {
-
+                while (true) {
                     while (i < frames.Count)
                     {
                         stopwatch.Restart();
-                        SetPixels(frames[i].ChangedPixels);
-                        Thread.Sleep(Math.Max(frames[i].DelayMS - (int)stopwatch.ElapsedMilliseconds, 0));
+                        SetPixels(frames[i].ChangedPixels, colorDivisor);
+                        if(keepDelay) Thread.Sleep(Math.Max(frames[i].DelayMS - (int)stopwatch.ElapsedMilliseconds, 0));
                         Draw();
                         i++;
                     }
                     i = 0;
+                    if (iterations == 1) break;
+                    if (iterations != 0) iterations--;
                 }
             }
-
         }
 
 
