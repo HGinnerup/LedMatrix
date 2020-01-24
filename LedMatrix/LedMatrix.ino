@@ -14,7 +14,7 @@
 
 #define NUM_LEDS (NUM_LEDS_X * NUM_LEDS_Y)
 
-CRGB leds[NUM_LEDS_Y][NUM_LEDS_X];
+CRGB leds[NUM_LEDS];
 
 enum Actions {
 	Invalid     = 0xFF,
@@ -27,7 +27,7 @@ SerialBuffer<1024> Buffer;
 
 void setPixelColor(uint8_t x, uint8_t y, CRGB color) {
 	if (x < NUM_LEDS_X && y < NUM_LEDS_Y) {
-		leds[y][x] = color;
+		leds[y*NUM_LEDS_X+x] = color;
 	}
 }
 
@@ -147,71 +147,37 @@ void renderIncomingBitmap() {
 
 
 void setup() {
-	FastLED.addLeds<WS2812B, 52, GRB>(leds[ 0], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 50, GRB>(leds[ 1], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 48, GRB>(leds[ 2], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 46, GRB>(leds[ 3], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 44, GRB>(leds[ 4], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 42, GRB>(leds[ 5], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 40, GRB>(leds[ 6], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 38, GRB>(leds[ 7], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 36, GRB>(leds[ 8], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 34, GRB>(leds[ 9], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 32, GRB>(leds[10], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 30, GRB>(leds[11], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 28, GRB>(leds[12], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 26, GRB>(leds[13], NUM_LEDS_X);
-	FastLED.addLeds<WS2812B, 24, GRB>(leds[14], NUM_LEDS_X);
-
+	FastLED.addLeds<WS2812B, 3, GRB>(leds, NUM_LEDS);
 	Serial.begin(115200, SERIAL_8E1);
-
-	//FastLED.clear();
 }
 
-//void ReadNBytes(uint8_t* buffer, uint32_t count) {
-//
-//}
-
-bool updated = true;
 void loop() {
+	uint8_t data;
+	Buffer.ReadNBytes(&data, 1);
 
-	/* Update to use buffer, rather than updating only when serial available*/
-	if (Serial.available() > 0) {
-		uint8_t data;
-		Buffer.ReadNBytes(&data, 1);
-
-		// Positional data beyond the bounds of NUM_LEDS_X and NUM_LEDS_Y can be used for special cases.
-		switch (data) {
-
-		case Actions::Invalid:
-			break;
-		case Actions::Render:
+	// Positional data beyond the bounds of NUM_LEDS_X and NUM_LEDS_Y can be used for special cases.
+	switch (data) {
+		case 0x00:
+		break;
+		case (uint8_t)Actions::Invalid:
+		break;
+		case (uint8_t)Actions::Render:
 			FastLED.show();
-			break;
-		case Actions::ClearBuffer:
+		break;
+		case (uint8_t)Actions::ClearBuffer:
 			Serial.flush();
-			break;
-		case Actions::BitMap:
+		break;
+		case (uint8_t)Actions::BitMap:
 			while (Serial.available() <= 0);
 			renderIncomingBitmap();
-			break;
-
+		break;
 		default: // Render pixel
 			uint8_t x = (data & 0xF0) >> 4;
 			uint8_t y = (data & 0x0F);
 			uint8_t color[3];
 			Buffer.ReadNBytes(color, 3);
-
 			setPixelColor(x, y, CRGB(color[0], color[1], color[2]));
-			//setPixelColor(x, y, CRGB(Serial.read(), Serial.read(), Serial.read()));
-
-			break;
-		}
-		updated = true;
-	}
-	else if(updated) {
-		//FastLED.show();
-		updated = false;
+		break;
 	}
 }
 
