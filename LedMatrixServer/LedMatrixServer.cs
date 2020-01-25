@@ -138,6 +138,30 @@ namespace LedMatrixServer {
             return destImage;
         }
         
+        public void DisplayBmp(Bitmap bmp) {
+            for (int x = 0; x < bmp.Width; x++) {
+                for (int y = 0; y < bmp.Height; y++) {
+                    var color = bmp.GetPixel(x, y);
+                    SetPixel(x, y, color.R / 5, color.G / 5, color.B / 5);
+                }
+            }
+        }
+
+        public void DisplayBmpScaled(Bitmap bmp) {
+            DisplayBmp(FitImage(new Bitmap(bmp)));
+        }
+
+        public void DisplayComputerMonitor()
+        {
+
+            var captureBmp = new Bitmap(1920, 1080, PixelFormat.Format32bppArgb);
+            using (var captureGraphic = Graphics.FromImage(captureBmp)) {
+                //captureGraphic.CopyFromScreen(0, 0, 0, 0, captureBmp.Size);
+                captureGraphic.CopyFromScreen(1920, 0, 0, 0, captureBmp.Size);
+                DisplayBmpScaled(captureBmp);
+                //captureBmp.Save("capture.jpg", ImageFormat.Jpeg);
+            }
+        }
 
         public List<Frame> CreateFrames(Image gif) {
             var frames = new List<Frame>();
