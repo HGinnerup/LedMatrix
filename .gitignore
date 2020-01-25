@@ -352,10 +352,8 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+__vm/*
+LedMatrix/__vm/*
 __vm/
-LedMatrix/__vm
-*.xml
-LedMatrix/__vm/.LedMatrix.vsarduino.h
-LedMatrix/__vm/Compile.vmps.xml
-LedMatrix/__vm/Configuration.Debug.vmps.xml
-LedMatrix/__vm/Upload.vmps.xml
+LedMatrix/__vm/
+
