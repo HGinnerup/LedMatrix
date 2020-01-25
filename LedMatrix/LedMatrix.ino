@@ -6,13 +6,13 @@
  $85$FF$00$00
 */
 
-#define NUM_LEDS_X 15
-#define NUM_LEDS_Y 15
+constexpr auto NUM_LEDS_X = 15;
+constexpr auto NUM_LEDS_Y = 15;
 
-#define DATA_PIN 2
+constexpr auto DATA_PIN = 2;
 
-#define WIFI_SSID     "SSID"
-#define WIFI_PASSWORD "PASSWORD"
+constexpr auto WIFI_SSID     = "WIFI_SSID";
+constexpr auto WIFI_PASSWORD = "WIFI_PASSWORD";
 
 
 
