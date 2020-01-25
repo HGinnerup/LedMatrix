@@ -21,17 +21,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LedStrip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LedStrip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="__vm\.LedMatrix.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
