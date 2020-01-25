@@ -23,7 +23,7 @@ namespace LedMatrixServer {
 
             matrix.SetColor(Color.Black);
 
-            matrix.RenderGif("banana.gif");
+            matrix.RenderGif("banana.gif", 0, 10, false);
 
         }
     }

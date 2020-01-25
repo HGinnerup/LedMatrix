@@ -6,35 +6,40 @@
 #include "arduino.h"
 
 
-template <uint16_t BufferSize>
+template <class indexType, class dataType, indexType BufferSize>
 class SerialBuffer {
 
 private:
-	uint8_t  buffer[BufferSize];
-	uint16_t bufferStart  = 0;
-	uint16_t bufferLength = 0;
+	dataType  buffer[BufferSize];
+	indexType bufferStart  = 0;
+	indexType bufferLength = 0;
 
 public:
-	const uint16_t bufferSize = BufferSize;
-	void ReadNBytes(uint8_t* buffer, uint16_t count);
-	uint16_t PopulateBuffer();
-	uint16_t Available();
+	const indexType bufferSize = BufferSize;
+	bool CanReadNBytes(indexType count);
+	void ReadNBytes(dataType* buffer, indexType count);
+	indexType PopulateBuffer();
+	indexType PopulateBuffer(dataType* bytes, indexType length);
+	indexType Available();
+	indexType SpaceAvailable();
 	void Flush();
 };
 
-
-template <uint16_t BufferSize>
-void SerialBuffer<BufferSize>::ReadNBytes(uint8_t* buffer, uint16_t count) {
-
-	while (Serial.available() < count);
-	Serial.readBytes(buffer, count);
-	return;
+template <class indexType, class dataType, indexType BufferSize>
+bool SerialBuffer<indexType, dataType, BufferSize>::CanReadNBytes(indexType count) {
+	return count <= this->bufferLength;
+}
 
 
+template <class indexType, class dataType, indexType BufferSize>
+void SerialBuffer<indexType, dataType, BufferSize>::ReadNBytes(dataType* buffer, indexType count) {
+
+	//while (Available() < count);
+	//Serial.readBytes(buffer, count);
+	//return;
 
 
-	// TODO: will block if count is larger than buffersize
-	while (count > this->bufferLength) this->PopulateBuffer();
+	while (!CanReadNBytes(count)) this->PopulateBuffer();
 
 	for (uint16_t i = 0; i < count; i++) {
 		buffer[i] = this->buffer[(this->bufferStart + i) % this->bufferSize];
@@ -44,37 +49,41 @@ void SerialBuffer<BufferSize>::ReadNBytes(uint8_t* buffer, uint16_t count) {
 	this->bufferLength -= count;
 }
 
-template <uint16_t BufferSize>
-uint16_t SerialBuffer<BufferSize>::PopulateBuffer()
-{
-	if (Serial.available() == 0) return 0;
-
-	uint16_t bytesReadBeforeLooparound = 0;
-	uint16_t bytesReadAfterLooparound = 0;
-
-	// Read till end of buffer, or till it reaches beginning of data
-	bytesReadBeforeLooparound = Serial.readBytes(this->buffer + this->bufferStart, min(this->bufferSize - this->bufferStart, this->bufferSize - this->bufferLength));
-	this->bufferLength += bytesReadBeforeLooparound;
-
-	// Loop around and continue reading from start of buffer
-	if (this->bufferLength + this->bufferStart == this->bufferSize) {
-		bytesReadAfterLooparound = Serial.readBytes(this->buffer, this->bufferStart);
-		this->bufferLength += bytesReadAfterLooparound;
-	}
-
-	Serial.write(buffer + this->bufferStart, bytesReadBeforeLooparound);
-	Serial.write(buffer, bytesReadAfterLooparound);
-
-	return bytesReadBeforeLooparound + bytesReadAfterLooparound;
+template <class indexType, class dataType, indexType BufferSize>
+indexType SerialBuffer<indexType, dataType, BufferSize>::SpaceAvailable() {
+	return this->bufferSize - this->bufferLength;
 }
 
-template <uint16_t BufferSize>
-uint16_t SerialBuffer<BufferSize>::Available() {
+template <class indexType, class dataType, indexType BufferSize>
+indexType SerialBuffer<indexType, dataType, BufferSize>::PopulateBuffer() {
+	dataType serialData[bufferSize];
+	indexType readCount = min(SpaceAvailable(), (indexType)Serial.available());
+	Serial.readBytes(serialData, readCount);
+	return PopulateBuffer(serialData, readCount);
+}
+
+template <class indexType, class dataType, indexType BufferSize>
+indexType SerialBuffer<indexType, dataType, BufferSize>::PopulateBuffer(dataType* bytes, indexType length) {
+
+	length = min(length, SpaceAvailable());
+	if (length == 0) return 0;
+
+	for (indexType i = 0; i < length; i++) {
+		buffer[(this->bufferStart + i) % this->bufferSize] = bytes[i];
+	}
+
+	this->bufferLength += length;
+
+	return length;
+}
+
+template <class indexType, class dataType, indexType BufferSize>
+indexType SerialBuffer<indexType, dataType, BufferSize>::Available() {
 	return this->bufferLength + Serial.available();
 }
 
-template <uint16_t BufferSize>
-void SerialBuffer<BufferSize>::Flush() {
+template <class indexType, class dataType, indexType BufferSize>
+void SerialBuffer<indexType, dataType, BufferSize>::Flush() {
 	this->bufferLength = 0;
 	Serial.flush();
 }
