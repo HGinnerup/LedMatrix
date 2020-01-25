@@ -14,8 +14,7 @@ namespace LedMatrixServer {
 
             (new Thread(i => {
                 while (true) {
-                    while (matrix.Serial.BytesToRead == 0) Thread.Sleep(100);
-                    matrix.PrintSerialInput();
+                    matrix.Serial.PrintSerialInput();
                 }
             })).Start();
 
