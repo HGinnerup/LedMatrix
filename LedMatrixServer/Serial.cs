@@ -7,7 +7,8 @@ using System.Threading;
 
 namespace LedMatrixServer
 {
-    public class Serial : IDisposable {
+    public class Serial : ICommunicationLayer
+    {
 
         public int MaxPacketSize { get; set; } = 1;
 
@@ -17,8 +18,11 @@ namespace LedMatrixServer
         private SerialPort PortStream { get; set; }
 
         public void Queue(byte b) {
-            var array = new byte[] { b };
-            PortStream.Write(array, 0, array.Length);
+            Buffer.Add(b);
+            if (Buffer.Count >= MaxPacketSize) Transmit();
+
+            //var array = new byte[] { b };
+            //PortStream.Write(array, 0, array.Length);
             //Thread.Sleep(10);
         }
         public void Queue(IEnumerable<byte> b) {
@@ -29,7 +33,7 @@ namespace LedMatrixServer
         public void Transmit() {
             PortStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
-            Thread.Sleep(100);
+            Thread.Sleep(1);
         }
 
         public Serial(string comPort, int baudRate) {
@@ -39,7 +43,7 @@ namespace LedMatrixServer
             PortStream.Parity    = Parity.Even;
             PortStream.StopBits  = StopBits.One;
 
-            PortStream.Handshake = Handshake.RequestToSend;
+            PortStream.Handshake = Handshake.None;
             //PortStream.Handshake = Handshake.RequestToSend;
             //PortStream.Handshake = Handshake.XOnXOff;
 
@@ -55,7 +59,7 @@ namespace LedMatrixServer
             Thread.Sleep(1000);
         }
 
-        public void PrintSerialInput()
+        public void PrintIncoming()
         {
             if (PortStream.BytesToRead > 0)
             {

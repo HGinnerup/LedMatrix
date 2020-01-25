@@ -17,22 +17,29 @@ namespace LedMatrixServer {
             ClearBuffer = 0xF2
         };
 
-        public Serial Serial { get; set; }
+        //public Serial Serial { get; set; }
+        private ICommunicationLayer CommunicationLayer { get; set; }
         
         public int Width  { get; private set; }
         public int Height { get; private set; }
 
-        public LedMatrixServer(int width, int height, string comPort, int baudRate) {
+        public void PrintIncoming()
+        {
+            CommunicationLayer.PrintIncoming();
+        }
+
+        public LedMatrixServer(int width, int height, ICommunicationLayer communicationLayer) {
             Width  = width;
             Height = height;
 
-            Serial = new Serial(comPort, baudRate);
+            CommunicationLayer = communicationLayer;
+
             lastDraw.Start();
         }
 
 
         private void SendAction(Actions action) {
-            Serial.Queue((byte)action);
+            CommunicationLayer.Queue((byte)action);
         }
 
         //private DateTime LastDraw = DateTime.Now;
@@ -60,7 +67,7 @@ namespace LedMatrixServer {
         private void SetPixel(byte position, byte r, byte g, byte b) {
             byte[] buffer = { position, r, g, b };
 
-            Serial.Queue(buffer);
+            CommunicationLayer.Queue(buffer);
         }
 
 
@@ -244,9 +251,8 @@ namespace LedMatrixServer {
             }
         }
 
-
         public void Dispose() {
-            Serial.Dispose();
+            CommunicationLayer?.Dispose();
         }
     }
 }
