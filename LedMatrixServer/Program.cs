@@ -9,7 +9,8 @@ namespace LedMatrixServer {
 
         static void Main(string[] args) {
 
-            var matrix = new LedMatrixServer();
+            var matrix = new LedMatrixServer(15, 15, "COM7", 1000000);
+            //var matrix = new LedMatrixServer(15, 15, "COM7", 115200);
 
             (new Thread(i => {
                 while (true) {

@@ -17,26 +17,35 @@ namespace LedMatrixServer {
             ClearBuffer = 0xF2
         };
 
-        public Serial Serial = new Serial();
+        public Serial Serial { get; set; }
         
-        public readonly int Width  = 15;
-        public readonly int Height = 15;
+        public int Width  { get; private set; }
+        public int Height { get; private set; }
 
-        private void SendByte(byte b) {
-            byte[] buffer = { b };
-            Serial.Queue(b);
+        public LedMatrixServer(int width, int height, string comPort, int baudRate) {
+            Width  = width;
+            Height = height;
+
+            Serial = new Serial(comPort, baudRate);
+            lastDraw.Start();
         }
 
-        private DateTime LastDraw = DateTime.Now;
+
+        private void SendAction(Actions action) {
+            Serial.Queue((byte)action);
+        }
+
+        //private DateTime LastDraw = DateTime.Now;
+        private Stopwatch lastDraw = new Stopwatch();
         public void Draw() {
-            SendByte((byte)Actions.Render);
-            Console.WriteLine($"\n{1000 / (DateTime.Now - LastDraw).TotalMilliseconds} draws per second");
-            LastDraw = DateTime.Now;
-            Thread.Sleep(10);
+            SendAction(Actions.Render);
+            Console.WriteLine($"{1000 / lastDraw.ElapsedMilliseconds} FPS");
+            lastDraw.Restart();
+            //Thread.Sleep(3);
         }
         public void ClearBuffer() {
             for (int i = 0; i < 10; i++)
-                SendByte((byte)Actions.ClearBuffer);
+                SendAction(Actions.ClearBuffer);
         }
         public void SetPixel(Point point, Color color) {
             SetPixel(point.X, point.Y, color.R, color.G, color.B); ;
@@ -64,9 +73,6 @@ namespace LedMatrixServer {
             Draw();
         }
 
-        public LedMatrixServer() {
-
-        }
         public void RenderBitmap(Bitmap bmp) {
             RenderBitmap(bmp, null);
         }

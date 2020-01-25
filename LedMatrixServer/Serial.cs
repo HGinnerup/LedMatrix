@@ -29,26 +29,30 @@ namespace LedMatrixServer
         public void Transmit() {
             PortStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
-            //Thread.Sleep(10);
+            Thread.Sleep(100);
         }
 
-        public Serial() {
-            //PortStream = new SerialPort("COM3", 1000000);
-            PortStream = new SerialPort("COM7", 115200);
+        public Serial(string comPort, int baudRate) {
+            PortStream = new SerialPort(comPort, baudRate);
 
             PortStream.DataBits  = 8;
             PortStream.Parity    = Parity.Even;
             PortStream.StopBits  = StopBits.One;
 
-            PortStream.Handshake = Handshake.None;
+            PortStream.Handshake = Handshake.RequestToSend;
             //PortStream.Handshake = Handshake.RequestToSend;
             //PortStream.Handshake = Handshake.XOnXOff;
 
             PortStream.DtrEnable = true;
             PortStream.RtsEnable = true;
 
+            if (PortStream.IsOpen) {
+                PortStream.Close();
+                Thread.Sleep(1000);
+            }
+
             PortStream.Open();
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
         }
 
         public void PrintSerialInput()
