@@ -33,7 +33,7 @@ namespace LedMatrixServer
         public void Transmit() {
             PortStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
-            Thread.Sleep(1);
+            Thread.Sleep(10);
         }
 
         public Serial(string comPort, int baudRate) {
@@ -45,7 +45,7 @@ namespace LedMatrixServer
 
             PortStream.Handshake = Handshake.None;
             //PortStream.Handshake = Handshake.RequestToSend;
-            //PortStream.Handshake = Handshake.XOnXOff;
+            PortStream.Handshake = Handshake.XOnXOff;
 
             PortStream.DtrEnable = true;
             PortStream.RtsEnable = true;

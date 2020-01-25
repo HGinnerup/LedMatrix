@@ -46,13 +46,15 @@ namespace LedMatrixServer {
         private Stopwatch lastDraw = new Stopwatch();
         public void Draw() {
             SendAction(Actions.Render);
-            Console.WriteLine($"{1000 / lastDraw.ElapsedMilliseconds} FPS");
+            Console.WriteLine($"{1000 / Math.Max(lastDraw.ElapsedMilliseconds, 1)} FPS");
+            CommunicationLayer.Transmit();
             lastDraw.Restart();
             //Thread.Sleep(3);
         }
-        public void ClearBuffer() {
+        public void Flush() {
             for (int i = 0; i < 10; i++)
                 SendAction(Actions.ClearBuffer);
+            CommunicationLayer.Transmit();
         }
         public void SetPixel(Point point, Color color) {
             SetPixel(point.X, point.Y, color.R, color.G, color.B); ;

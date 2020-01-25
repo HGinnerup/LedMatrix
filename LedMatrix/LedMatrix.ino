@@ -6,6 +6,7 @@
  $85$FF$00$00
 */
 
+#include <ArduinoOTA.h>
 constexpr auto NUM_LEDS_X = 15;
 constexpr auto NUM_LEDS_Y = 15;
 
@@ -50,24 +51,18 @@ void setup() {
 
             matrix.Buffer.PopulateBuffer(packet.data(), packet.length());
 
-            });
+        });
     }
 
 }
 
-
-
-bool lightOn = false;
-
 void loop() {
-	lightOn = !lightOn;
-	digitalWrite(LED_BUILTIN, lightOn);
+	digitalWrite(LED_BUILTIN, false);
 	OtaHandle();
-		
 	
 	if (matrix.DataAvailable() != 0) {
 		matrix.MatrixHandle();
 	}
 
-	//delay(1000);
+	digitalWrite(LED_BUILTIN, true);
 }

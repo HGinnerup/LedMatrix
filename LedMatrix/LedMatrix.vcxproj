@@ -120,7 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="OTA.cpp" />
   </ItemGroup>
   <ItemGroup>
