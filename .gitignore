@@ -357,3 +357,7 @@ LedMatrix/__vm/*
 __vm/
 LedMatrix/__vm/
 
+LedMatrix/__vm/Compile.vmps.xml
+LedMatrix/__vm/Configuration.Debug.vmps.xml
+LedMatrix/__vm/Configuration.Release.vmps.xml
+LedMatrix/__vm/Upload.vmps.xml
