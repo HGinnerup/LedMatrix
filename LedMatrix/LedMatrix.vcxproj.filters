@@ -23,6 +23,9 @@
     <ClCompile Include="OTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tcp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="board.txt">
@@ -35,5 +38,6 @@
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="LedMatrix.h" />
+    <ClInclude Include="Tcp.h" />
   </ItemGroup>
 </Project>

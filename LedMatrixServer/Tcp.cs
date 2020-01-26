@@ -7,18 +7,21 @@ using System.Threading;
 
 namespace LedMatrixServer
 {
-    class Udp : ICommunicationLayer
+    class Tcp : ICommunicationLayer
     {
         public int MaxPacketSize { get; set; } = 800;
-        private UdpClient udpClient { get; set; }
+        private TcpClient Client { get; set; }
+        private NetworkStream NetworkStream { get; set; }
         private IPEndPoint RemoteIpEndPoint { get; set; }
-        public Udp(string hostname, int port)
+
+        public Tcp(string hostname, int port)
         {
-            udpClient = new UdpClient(hostname, port);
+            Client = new TcpClient(hostname, port);
+            NetworkStream = Client.GetStream();
         }
         public void Dispose()
         {
-            udpClient.Close();
+            Client.Close();
         }
 
         public void PrintIncoming()
@@ -34,17 +37,15 @@ namespace LedMatrixServer
             if (Buffer.Count >= MaxPacketSize) Transmit();
         }
 
-        public void Queue(IEnumerable<byte> b)
-        {
+        public void Queue(IEnumerable<byte> b) {
             Buffer.AddRange(b);
             if (Buffer.Count >= MaxPacketSize) Transmit();
         }
 
-        public void Transmit()
-        {
-            udpClient.Send(Buffer.ToArray(), Buffer.Count);
+        public void Transmit() {
+            NetworkStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
-            Thread.Sleep(100);
+            Thread.Sleep(10);
         }
     }
 }

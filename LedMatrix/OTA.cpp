@@ -5,15 +5,6 @@
 #include "OTA.h"
 
 void OtaSetup(const char* ssid, const char* password) {
-	Serial.println("Booting");
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(ssid, password);
-	while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-		Serial.println("Connection Failed! Rebooting...");
-		delay(5000);
-		ESP.restart();
-	}
-
 	ArduinoOTA
 		.onStart([]() {
 			String type;

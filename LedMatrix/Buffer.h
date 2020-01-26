@@ -5,9 +5,20 @@
 
 #include "arduino.h"
 
+//class SerialBufferBase {
+//public: 
+//	const indexType bufferSize;
+//	bool CanReadNBytes(indexType count);
+//	void ReadNBytes(dataType* buffer, indexType count);
+//	void PopulateBuffer();
+//	virtual indexType PopulateBuffer(dataType* bytes, indexType length);
+//	virtual indexType Available();
+//	indexType SpaceAvailable();
+//	void Flush();
+//};
 
 template <class indexType, class dataType, indexType BufferSize>
-class SerialBuffer {
+class SerialBuffer /*: BaseSerialBuffer*/ {
 
 private:
 	dataType  buffer[BufferSize];

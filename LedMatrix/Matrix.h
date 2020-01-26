@@ -1,6 +1,9 @@
 // LedMatrix.h
 
 #pragma once
+#include "WiFi.h"
+#include "AsyncUDP.h"
+
 #include "arduino.h"
 #include "FastLED.h"
 #include "Buffer.h"
@@ -30,7 +33,6 @@ public:
 	SerialBuffer<uint16_t, uint8_t, 1024> Buffer;
 
 private:
-
 };
 
 

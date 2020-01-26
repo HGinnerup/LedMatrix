@@ -121,6 +121,7 @@
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="OTA.cpp" />
+    <ClCompile Include="Tcp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="board.txt" />
@@ -130,6 +131,7 @@
     <ClInclude Include="LedMatrix.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="OTA.h" />
+    <ClInclude Include="Tcp.h" />
     <ClInclude Include="__vm\.LedMatrix.vsarduino.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
