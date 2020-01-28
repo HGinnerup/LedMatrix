@@ -23,7 +23,10 @@
     <ClCompile Include="OTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tcp.cpp">
+    <ClCompile Include="WifiManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AsyncTCP-master\src\AsyncTCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,6 +41,7 @@
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="LedMatrix.h" />
-    <ClInclude Include="Tcp.h" />
+    <ClInclude Include="WifiManager.h" />
+    <ClInclude Include="src\AsyncTCP-master\src\AsyncTCP.h" />
   </ItemGroup>
 </Project>

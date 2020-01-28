@@ -33,6 +33,8 @@ public:
 	SerialBuffer<uint16_t, uint8_t, 1024> Buffer;
 
 private:
+	uint8_t currentAction;
+	bool currentActionHasBeenProcessed = true;
 };
 
 
@@ -172,27 +174,39 @@ template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOr
 void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::MatrixHandle() {
 	uint8_t data;
 	Buffer.ReadNBytes(&data, 1);
+	if (this->currentActionHasBeenProcessed) {
+		Buffer.ReadNBytes(&currentAction, 1);
+		data = currentAction;
+	}
+	this->currentActionHasBeenProcessed = false;
 
 	// Positional data beyond the bounds of NUM_LEDS_X and NUM_LEDS_Y can be used for special cases.
 	switch (data) {
 	case (uint8_t)Actions::Invalid:
+		this->currentActionHasBeenProcessed = true;
 		break;
 	case (uint8_t)Actions::Render:
 		FastLED.show();
+		this->currentActionHasBeenProcessed = true;
 		break;
 	case (uint8_t)Actions::ClearBuffer:
 		Buffer.Flush();
+		this->currentActionHasBeenProcessed = true;
 		break;
 	case (uint8_t)Actions::BitMap:
 		while (Buffer.Available() <= 0);
 		renderIncomingBitmap();
+		this->currentActionHasBeenProcessed = true;
 		break;
 	default: // Render pixel
-		uint8_t x = (data & 0xF0) >> 4;
-		uint8_t y = (data & 0x0F);
-		uint8_t color[3];
-		Buffer.ReadNBytes(color, 3);
-		setPixelColor(x, y, CRGB(color[0], color[1], color[2]));
+		if (Buffer.CanReadNBytes(3)) {
+			uint8_t x = (data & 0xF0) >> 4;
+			uint8_t y = (data & 0x0F);
+			uint8_t color[3];
+			Buffer.ReadNBytes(color, 3);
+			setPixelColor(x, y, CRGB(color[0], color[1], color[2]));
+			this->currentActionHasBeenProcessed = true;
+		}
 		break;
 	}
 }

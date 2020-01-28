@@ -13,12 +13,25 @@ namespace LedMatrixServer
         private TcpClient Client { get; set; }
         private NetworkStream NetworkStream { get; set; }
         private IPEndPoint RemoteIpEndPoint { get; set; }
+        private string Hostname { get; set; }
+        private int Port { get; set; }
 
         public Tcp(string hostname, int port)
         {
+            Hostname = hostname;
+            Port = port;
+            //Client.Connect(hostname, port);
+            //Reconnect();
             Client = new TcpClient(hostname, port);
             NetworkStream = Client.GetStream();
         }
+
+        private void Reconnect()
+        {
+            Client.Connect(Hostname, Port);
+            NetworkStream = Client.GetStream();
+        }
+
         public void Dispose()
         {
             Client.Close();
@@ -43,8 +56,10 @@ namespace LedMatrixServer
         }
 
         public void Transmit() {
+            while (!Client.Connected) Reconnect();
             NetworkStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
+            if(!Client.Connected) Reconnect();
             Thread.Sleep(10);
         }
     }

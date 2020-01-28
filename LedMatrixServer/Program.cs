@@ -8,13 +8,9 @@ namespace LedMatrixServer {
     class Program {
 
         static void Main(string[] args) {
-
-            
-            
-            //using var matrix = new LedMatrixServer(15, 15, new Serial("COM7", 1000000));
-            //using var matrix = new LedMatrixServer(15, 15, new Serial("COM7", 1000000));
-            //using var matrix = new LedMatrixServer(15, 15, new Tcp("10.10.10.237", 4321));
-            using var matrix = new LedMatrixServer(15, 15, new Udp("10.10.10.237", 1234));
+            //using var matrix = new LedMatrixServer(15, 15, new Serial("COM7", 115200));
+            using var matrix = new LedMatrixServer(15, 15, new Tcp("10.10.10.237", 4321));
+            //using var matrix = new LedMatrixServer(15, 15, new Udp("10.10.10.237", 1234));
             //var matrix = new LedMatrixServer(15, 15, "COM7", 115200);
 
             //(new Thread(i => {

@@ -52,7 +52,7 @@ void SerialBuffer<indexType, dataType, BufferSize>::ReadNBytes(dataType* buffer,
 
 	while (!CanReadNBytes(count)) this->PopulateBuffer();
 
-	for (uint16_t i = 0; i < count; i++) {
+	for (indexType i = 0; i < count; i++) {
 		buffer[i] = this->buffer[(this->bufferStart + i) % this->bufferSize];
 	}
 

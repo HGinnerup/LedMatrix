@@ -39,26 +39,72 @@ void WifiManager::UdpLoop() {
 }
 
 
-void WifiManager::TcpSetup(uint16_t port) {
-	tcpServer.begin(port);
+//void WifiManager::TcpSetup(uint16_t port) {
+//	tcpServer.begin(port);
+//	tcpServer.setTimeout(600);
+//}
+
+//void WifiManager::TcpSetup(uint16_t port, uint16_t maxPacketSize, void (*handler)(struct pbuf* packet)) {
+//	AsyncServer* tcpServerAsync = new AsyncServer(port);
+//
+//	tcpServerAsync->onClient([handler, maxPacketSize](void* _, AsyncClient* clientSetup) {
+//		Serial.write("onClient\n\n");
+//		clientSetup->onPacket([handler](void* a, AsyncClient* client, struct pbuf* packet) {
+//			Serial.write("onPacket\n\n");
+//			(*handler)(packet);
+//			}, &clientSetup);
+//		clientSetup->onConnect([](void* a, AsyncClient* client) { Serial.write("onConnect\n\n");    }, &clientSetup);
+//		clientSetup->onDisconnect([](void* a, AsyncClient* client) { Serial.write("onDisconnect\n\n"); }, &clientSetup);
+//		clientSetup->onData([](void* a, AsyncClient* client, void* data, size_t len) {
+//
+//			Serial.printf("\n data received from client %s \n", client->remoteIP().toString().c_str());
+//			Serial.write((char*)data, len);
+//
+//			});
+//		}, tcpServerAsync);
+//
+//
+//	tcpServerAsync->begin();
+//}
+
+void WifiManager::TcpSetup(uint16_t port, uint16_t maxPacketSize, void (*handler)(struct pbuf* packet)) {
+#include <HardwareSerial.h>
+	AsyncServer* tcpServerAsync = new AsyncServer(port);
+
+	tcpServerAsync->onClient([handler, maxPacketSize](void* _, AsyncClient* clientSetup) {
+		Serial.println("onClient");
+		clientSetup->onPacket(    [handler](void* a, AsyncClient* client, struct pbuf* packet) { 
+			Serial.println("onPacket");
+			Serial.printf("PacketPtr: %d, PayloadPtr: %d, PayloadLen: %d\r\n", packet, packet->payload, packet->len);
+			handler(packet);
+
+		}, &clientSetup);
+		clientSetup->onConnect(   [](void* a, AsyncClient* client)                      { Serial.println("onConnect");    }, &clientSetup);
+		clientSetup->onDisconnect([](void* a, AsyncClient* client)                      { Serial.println("onDisconnect"); }, &clientSetup);
+		clientSetup->onData([](void* a, AsyncClient* client, void* data, size_t len) {
+			Serial.println("onData");
+			Serial.println((char*)data);
+		});
+		}, tcpServerAsync);
+	tcpServerAsync->begin();
 }
 
 void WifiManager::TcpLoop(void (*onRead)(WiFiClient* tcpClient)) {
 
-	if (!this->tcpClient) {
-		this->tcpClient = this->tcpServer.available();
-		Serial.println("New tcpClient.");
-	}
+	//if (!this->tcpClient) {
+	//	this->tcpClient = this->tcpServer.available();
+	//	Serial.println("New tcpClient.");
+	//}
 
-	if (this->tcpClient) {
-		if (this->tcpClient.connected()) {
-			if (this->tcpClient.available()) {
-				onRead(&(this->tcpClient));
-			}
-		}
-		else {
-			this->tcpClient.stop();
-			Serial.println("Client Disconnected.");
-		}
-	}
+	//if (this->tcpClient) {
+	//	if (this->tcpClient.connected()) {
+	//		if (this->tcpClient.available()) {
+	//			onRead(&(this->tcpClient));
+	//		}
+	//	}
+	//	else {
+	//		this->tcpClient.stop();
+	//		Serial.println("Client Disconnected.");
+	//	}
+	//}
 }
