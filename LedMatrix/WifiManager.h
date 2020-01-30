@@ -16,7 +16,7 @@ public:
 	void UdpSetup(uint16_t port, void (*onPacket)(AsyncUDPPacket packet));
 	void UdpLoop();
 
-	void TcpSetup(uint16_t port, uint16_t maxPacketSize, void (*handler)(struct pbuf* packet));
+	void TcpSetup(uint16_t port, void (*handler)(struct pbuf* packet));
 	void TcpLoop(void (*onRead)(WiFiClient* tcpClient));
 
 private:

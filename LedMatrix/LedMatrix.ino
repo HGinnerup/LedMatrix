@@ -25,7 +25,7 @@ constexpr auto WIFI_PASSWORD = "password";
 WifiManager wifi;
 
 // TODO: Fix chipset
-LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, ESPIChipsets::APA102, DATA_PIN, GRB> matrix;
+LedMatrix<NUM_LEDS_X, NUM_LEDS_Y> matrix;
 
 void setup() {
 	FastLED.addLeds<WS2812B, DATA_PIN, GRB>(matrix.leds, NUM_LEDS_X * NUM_LEDS_Y);
@@ -35,39 +35,49 @@ void setup() {
 	wifi.Setup(WIFI_SSID, WIFI_PASSWORD);
 	NBNS.begin("LedMatrix");
 
+	//wifi.UdpSetup(1234, [](AsyncUDPPacket packet) {
+	//	//while (packet.length() > matrix.Buffer.SpaceAvailable()) matrix.MatrixHandle();
+	//	//matrix.Buffer.PopulateBuffer(packet.data(), packet.length());
+
+	//	uint8_t* dataPtr = packet.data();
+	//	uint16_t len = packet.length();
+	//	while (len > 0) {
+	//		Serial.printf("LenRemaining: %d\r\n", len);
+	//		uint16_t lenToAdd = (uint16_t)min(len, matrix.Buffer.SpaceAvailable());
+	//		matrix.Buffer.PopulateBuffer(dataPtr, lenToAdd);
+	//		dataPtr += lenToAdd;
+	//		len -= lenToAdd;
+	//		while (matrix.Buffer.Available() > 4) {
+	//			matrix.MatrixHandle();
+	//		}
+	//	}
+	//});
+	
+
 	wifi.UdpSetup(1234, [](AsyncUDPPacket packet) {
-		//while (packet.length() > matrix.Buffer.SpaceAvailable()) matrix.MatrixHandle();
-		//matrix.Buffer.PopulateBuffer(packet.data(), packet.length());
+		matrix.Buffer.PopulateBuffer((uint8_t*)packet.data(), packet.length(), []() { matrix.MatrixHandle(); });
+		});
+	wifi.TcpSetup(4321, [](pbuf* packet) {
+		matrix.Buffer.PopulateBuffer((uint8_t*)packet->payload, packet->len, []() { matrix.MatrixHandle(); });
+		});
 
-		uint8_t* dataPtr = packet.data();
-		uint16_t len = packet.length();
-		while (len > 0) {
-			Serial.printf("LenRemaining: %d\r\n", len);
-			uint16_t lenToAdd = (uint16_t)min(len, matrix.Buffer.SpaceAvailable());
-			matrix.Buffer.PopulateBuffer(dataPtr, lenToAdd);
-			dataPtr += lenToAdd;
-			len -= lenToAdd;
-			while (matrix.Buffer.Available() > 4) {
-				matrix.MatrixHandle();
-			}
-		}
-	});
+		
 
-	wifi.TcpSetup(4321, 1024, [](pbuf* packet) {
-		uint8_t* dataPtr = (uint8_t*)(packet->payload);
-		auto len = packet->len;
-		while (len > 0) {
-			Serial.printf("LenRemaining: %d\r\n", len);
-			auto lenToAdd = min(len, matrix.Buffer.SpaceAvailable());
-			Serial.printf("Adding: %d bytes to buffer\r\n", lenToAdd);
-			matrix.Buffer.PopulateBuffer(dataPtr, lenToAdd);
-			dataPtr += lenToAdd;
-			len -= lenToAdd;
-			while (matrix.Buffer.Available() > 4) {
-				matrix.MatrixHandle();
-			}
-		}
-	});
+	//wifi.TcpSetup(4321, 1024, [](pbuf* packet) {
+	//	uint8_t* dataPtr = (uint8_t*)(packet->payload);
+	//	auto len = packet->len;
+	//	while (len > 0) {
+	//		Serial.printf("LenRemaining: %d\r\n", len);
+	//		auto lenToAdd = min(len, matrix.Buffer.SpaceAvailable());
+	//		Serial.printf("Adding: %d bytes to buffer\r\n", lenToAdd);
+	//		matrix.Buffer.PopulateBuffer(dataPtr, lenToAdd);
+	//		dataPtr += lenToAdd;
+	//		len -= lenToAdd;
+	//		while (matrix.Buffer.Available() > 4) {
+	//			matrix.MatrixHandle();
+	//		}
+	//	}
+	//});
 
 	OtaSetup(WIFI_SSID, WIFI_PASSWORD);
 	pinMode(LED_BUILTIN, OUTPUT);

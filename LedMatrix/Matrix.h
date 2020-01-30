@@ -9,7 +9,7 @@
 #include "Buffer.h"
 
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
 class LedMatrix {
 public:
 	enum Actions {
@@ -39,17 +39,17 @@ private:
 
 
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::LedMatrix() {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::LedMatrix() {
 	//Buffer = SerialBuffer<1024>();
 }
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::~LedMatrix() {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::~LedMatrix() {
 }
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::renderIncomingBitmap() {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::renderIncomingBitmap() {
 	uint8_t buffer[4] = { 0 };
 	// http://www.ue.eti.pg.gda.pl/fpgalab/zadania.spartan3/zad_vga_struktura_pliku_bmp_en.html
 
@@ -163,17 +163,17 @@ void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::renderInco
 
 }
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::setPixelColor(uint8_t x, uint8_t y, CRGB color) {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::setPixelColor(uint8_t x, uint8_t y, CRGB color) {
 	if (x < NUM_LEDS_X && y < NUM_LEDS_Y) {
 		leds[y * NUM_LEDS_X + x] = color;
 	}
 }
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::MatrixHandle() {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::MatrixHandle() {
 	uint8_t data;
-	Buffer.ReadNBytes(&data, 1);
+	//Buffer.ReadNBytes(&data, 1);
 	if (this->currentActionHasBeenProcessed) {
 		Buffer.ReadNBytes(&currentAction, 1);
 		data = currentAction;
@@ -211,7 +211,7 @@ void LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::MatrixHand
 	}
 }
 
-template<int NUM_LEDS_X, int NUM_LEDS_Y, ESPIChipsets CHIPSET, int DATA_PIN, EOrder RGB_ORDER>
-uint16_t LedMatrix<NUM_LEDS_X, NUM_LEDS_Y, CHIPSET, DATA_PIN, RGB_ORDER>::DataAvailable() {
+template<int NUM_LEDS_X, int NUM_LEDS_Y>
+uint16_t LedMatrix<NUM_LEDS_X, NUM_LEDS_Y>::DataAvailable() {
 	return Buffer.Available();
 }

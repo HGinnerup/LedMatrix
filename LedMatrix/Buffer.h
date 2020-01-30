@@ -30,7 +30,7 @@ public:
 	bool CanReadNBytes(indexType count);
 	void ReadNBytes(dataType* buffer, indexType count);
 	indexType PopulateBuffer();
-	indexType PopulateBuffer(dataType* bytes, indexType length);
+	indexType PopulateBuffer(dataType* bytes, indexType length, void (*process)());
 	indexType Available();
 	indexType SpaceAvailable();
 	void Flush();
@@ -70,23 +70,45 @@ indexType SerialBuffer<indexType, dataType, BufferSize>::PopulateBuffer() {
 	dataType serialData[bufferSize];
 	indexType readCount = min(SpaceAvailable(), (indexType)Serial.available());
 	Serial.readBytes(serialData, readCount);
-	return PopulateBuffer(serialData, readCount);
+	return PopulateBuffer(serialData, readCount, NULL);
 }
+
+//template <class indexType, class dataType, indexType BufferSize>
+//indexType SerialBuffer<indexType, dataType, BufferSize>::_PopulateBuffer(dataType* bytes, indexType length) {
+//	len = min(length, SpaceAvailable());
+//	if (length == 0) return 0;
+//
+//	for (indexType i = 0; i < length; i++) {
+//		buffer[(this->bufferStart + i) % this->bufferSize] = bytes[i];
+//	}
+//
+//	this->bufferLength += length;
+//	return length;
+//}
 
 template <class indexType, class dataType, indexType BufferSize>
-indexType SerialBuffer<indexType, dataType, BufferSize>::PopulateBuffer(dataType* bytes, indexType length) {
+indexType SerialBuffer<indexType, dataType, BufferSize>::PopulateBuffer(dataType* bytes, indexType length, void (*process)()) {
+	while (length > 0) {
+		indexType lenToAdd = (indexType)min(length, SpaceAvailable());
+		//_PopulateBuffer(bytes, lenToAdd);
 
-	length = min(length, SpaceAvailable());
-	if (length == 0) return 0;
+		for (indexType i = 0; i < lenToAdd; i++) {
+			buffer[(this->bufferStart + i) % this->bufferSize] = bytes[i];
+		}
+		this->bufferLength += lenToAdd;
 
-	for (indexType i = 0; i < length; i++) {
-		buffer[(this->bufferStart + i) % this->bufferSize] = bytes[i];
+		bytes  += lenToAdd;
+		length -= lenToAdd;
+		while (Available() > 4) {
+			if (process != NULL) {
+				process();
+			}
+			//matrix.MatrixHandle();
+		}
 	}
-
-	this->bufferLength += length;
-
-	return length;
 }
+
+
 
 template <class indexType, class dataType, indexType BufferSize>
 indexType SerialBuffer<indexType, dataType, BufferSize>::Available() {

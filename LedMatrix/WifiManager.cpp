@@ -67,20 +67,26 @@ void WifiManager::UdpLoop() {
 //	tcpServerAsync->begin();
 //}
 
-void WifiManager::TcpSetup(uint16_t port, uint16_t maxPacketSize, void (*handler)(struct pbuf* packet)) {
+void WifiManager::TcpSetup(uint16_t port, void (*handler)(struct pbuf* packet)) {
 #include <HardwareSerial.h>
 	AsyncServer* tcpServerAsync = new AsyncServer(port);
 
-	tcpServerAsync->onClient([handler, maxPacketSize](void* _, AsyncClient* clientSetup) {
+	tcpServerAsync->onClient([handler](void* _, AsyncClient* clientSetup) {
 		Serial.println("onClient");
-		clientSetup->onPacket(    [handler](void* a, AsyncClient* client, struct pbuf* packet) { 
+		clientSetup->onPacket(    [handler, clientSetup](void* a, AsyncClient* client, struct pbuf* packet) { 
 			Serial.println("onPacket");
 			Serial.printf("PacketPtr: %d, PayloadPtr: %d, PayloadLen: %d\r\n", packet, packet->payload, packet->len);
 			handler(packet);
+			Serial.println("Finished processing");
+
+			clientSetup->ackPacket(packet);
+			Serial.println("AckPacketSent");
 
 		}, &clientSetup);
 		clientSetup->onConnect(   [](void* a, AsyncClient* client)                      { Serial.println("onConnect");    }, &clientSetup);
 		clientSetup->onDisconnect([](void* a, AsyncClient* client)                      { Serial.println("onDisconnect"); }, &clientSetup);
+		clientSetup->onError([](void* arg, AsyncClient* client, int8_t error) { Serial.printf("\n connection error %s from client %s \n", client->errorToString(error), client->remoteIP().toString().c_str()); }, &clientSetup);
+		clientSetup->onTimeout([](void* arg, AsyncClient* client, uint32_t time) { Serial.printf("\n client ACK timeout ip: %s \n", client->remoteIP().toString().c_str()); }, &clientSetup);
 		clientSetup->onData([](void* a, AsyncClient* client, void* data, size_t len) {
 			Serial.println("onData");
 			Serial.println((char*)data);
