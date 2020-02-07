@@ -70,17 +70,29 @@ void WifiManager::UdpLoop() {
 void WifiManager::TcpSetup(uint16_t port, void (*handler)(struct pbuf* packet)) {
 #include <HardwareSerial.h>
 	AsyncServer* tcpServerAsync = new AsyncServer(port);
+	auto tcpIsBeingProcessedPtr = &tcpIsBeingProcessed;
 
-	tcpServerAsync->onClient([handler](void* _, AsyncClient* clientSetup) {
+	tcpServerAsync->onClient([handler, tcpIsBeingProcessedPtr](void* _, AsyncClient* clientSetup) {
 		Serial.println("onClient");
-		clientSetup->onPacket(    [handler, clientSetup](void* a, AsyncClient* client, struct pbuf* packet) { 
+		clientSetup->onPacket(    [handler, clientSetup, tcpIsBeingProcessedPtr](void* a, AsyncClient* client, struct pbuf* packet) {
 			Serial.println("onPacket");
 			Serial.printf("PacketPtr: %d, PayloadPtr: %d, PayloadLen: %d\r\n", packet, packet->payload, packet->len);
-			handler(packet);
-			Serial.println("Finished processing");
 
-			clientSetup->ackPacket(packet);
-			Serial.println("AckPacketSent");
+			if (!(*tcpIsBeingProcessedPtr)) {
+				*tcpIsBeingProcessedPtr = true;
+				while (packet != NULL) {
+					handler(packet);
+					Serial.println("Finished processing");
+
+					clientSetup->ackPacket(packet);
+					Serial.println("AckPacketSent");
+					packet = packet->next;
+				}
+				*tcpIsBeingProcessedPtr = false;
+			}
+			else {
+				Serial.println("Queued processing of packet");
+			}
 
 		}, &clientSetup);
 		clientSetup->onConnect(   [](void* a, AsyncClient* client)                      { Serial.println("onConnect");    }, &clientSetup);
@@ -95,22 +107,22 @@ void WifiManager::TcpSetup(uint16_t port, void (*handler)(struct pbuf* packet)) 
 	tcpServerAsync->begin();
 }
 
-void WifiManager::TcpLoop(void (*onRead)(WiFiClient* tcpClient)) {
-
-	//if (!this->tcpClient) {
-	//	this->tcpClient = this->tcpServer.available();
-	//	Serial.println("New tcpClient.");
-	//}
-
-	//if (this->tcpClient) {
-	//	if (this->tcpClient.connected()) {
-	//		if (this->tcpClient.available()) {
-	//			onRead(&(this->tcpClient));
-	//		}
-	//	}
-	//	else {
-	//		this->tcpClient.stop();
-	//		Serial.println("Client Disconnected.");
-	//	}
-	//}
-}
+//void WifiManager::TcpLoop(void (*onRead)(WiFiClient* tcpClient)) {
+//
+//	//if (!this->tcpClient) {
+//	//	this->tcpClient = this->tcpServer.available();
+//	//	Serial.println("New tcpClient.");
+//	//}
+//
+//	//if (this->tcpClient) {
+//	//	if (this->tcpClient.connected()) {
+//	//		if (this->tcpClient.available()) {
+//	//			onRead(&(this->tcpClient));
+//	//		}
+//	//	}
+//	//	else {
+//	//		this->tcpClient.stop();
+//	//		Serial.println("Client Disconnected.");
+//	//	}
+//	//}
+//}

@@ -9,7 +9,7 @@ namespace LedMatrixServer
 {
     class Tcp : ICommunicationLayer
     {
-        public int MaxPacketSize { get; set; } = 800;
+        public int MaxPacketSize { get; set; } = 1000;
         private TcpClient Client { get; set; }
         private NetworkStream NetworkStream { get; set; }
         private IPEndPoint RemoteIpEndPoint { get; set; }
@@ -60,7 +60,7 @@ namespace LedMatrixServer
             NetworkStream.Write(Buffer.ToArray(), 0, Buffer.Count);
             Buffer = new List<byte>();
             if(!Client.Connected) Reconnect();
-            Thread.Sleep(10);
+            Thread.Sleep(250);
         }
     }
 }

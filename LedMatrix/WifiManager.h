@@ -17,12 +17,14 @@ public:
 	void UdpLoop();
 
 	void TcpSetup(uint16_t port, void (*handler)(struct pbuf* packet));
-	void TcpLoop(void (*onRead)(WiFiClient* tcpClient));
+	//void TcpLoop(void (*onRead)(WiFiClient* tcpClient));
 
 private:
 	AsyncUDP udpServer;
 	WiFiServer tcpServer;
-	WiFiClient tcpClient;
+	bool tcpIsBeingProcessed = false;
+	//WiFiClient tcpClient;
+	
 };
 
 

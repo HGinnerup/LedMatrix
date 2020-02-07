@@ -55,11 +55,19 @@ void setup() {
 	
 
 	wifi.UdpSetup(1234, [](AsyncUDPPacket packet) {
-		matrix.Buffer.PopulateBuffer((uint8_t*)packet.data(), packet.length(), []() { matrix.MatrixHandle(); });
+		matrix.Buffer.PopulateBuffer((uint8_t*)packet.data(), packet.length(), []() {
+			if (matrix.DataAvailable() > 4) {
+				matrix.MatrixHandle();
+			}
 		});
+	});
 	wifi.TcpSetup(4321, [](pbuf* packet) {
-		matrix.Buffer.PopulateBuffer((uint8_t*)packet->payload, packet->len, []() { matrix.MatrixHandle(); });
+		matrix.Buffer.PopulateBuffer((uint8_t*)packet->payload, packet->len, []() {
+			if (matrix.DataAvailable() > 4) {
+				matrix.MatrixHandle();
+			}
 		});
+	});
 
 		
 
